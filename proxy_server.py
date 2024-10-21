@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from socket import *
+import ssl
 import time, threading
 
 MAX_THREADS = 2
@@ -14,7 +15,14 @@ def handle_connection(socket, addr):
     if remote_url[0] !='/':
         raise Exception("Bad Request: Remote Url couldn't be parsed")
     
-    remote_url = remote_url[1:]
+    url_parts = remote_url.split('://')
+    print(url_parts)
+    if len(url_parts)<2:
+        message = "HTTP/1.1 404 NOT_FOUND\r\n\r\n\r\n"
+        socket.send(message.encode())
+        socket.close()
+        return
+    remote_url = url_parts[1]
     
     try: 
         if remote_url:
@@ -42,7 +50,9 @@ def connect(url):
         path = url.split('/',1)[1]
     try:
         proxy_socket = socket(AF_INET, SOCK_STREAM)
-        proxy_socket.connect((host,80))
+        context = ssl.create_default_context()
+        proxy_socket = context.wrap_socket(proxy_socket, server_hostname=host)
+        proxy_socket.connect((host,443))
     except Exception as e:
         print("Error occured while connecting to remote server")
         print(f"Error: {e}")
@@ -67,7 +77,7 @@ def connect(url):
         proxy_socket.close()
     response = response.decode()       
     headers, body = response.split("\r\n\r\n", 1)    
-    print(body[0:100])
+    print(body[0:500])
     return body          
 
 def start_server():
