@@ -49,9 +49,7 @@ def connect(url):
         proxy_socket.close()
         
     try:
-        # request = "GET /{path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n".format(host=host, path=path)    
-        request = "GET / HTTP/1.0\r\nHost: {}\r\nConnection: close\r\n\r\n".format(host)    
-
+        request = "GET /{path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n".format(host=host, path=path)
         print(request)
         proxy_socket.send(request.encode())
         response = proxy_socket.recv(4096)
